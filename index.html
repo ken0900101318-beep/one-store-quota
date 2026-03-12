@@ -350,9 +350,9 @@
                         <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">💰 預算範圍</label>
                         <select id="budgetFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
                             <option value="all">不限</option>
-                            <option value="low">150-200万（中小型）</option>
-                            <option value="mid">200-250万（标准型）</option>
-                            <option value="high">250-300万+（旗舰型）</option>
+                            <option value="low">150-200萬（中小型）</option>
+                            <option value="mid">200-250萬（標準型）</option>
+                            <option value="high">250-300萬+（旗艦型）</option>
                         </select>
                     </div>
                     <div>
@@ -369,8 +369,8 @@
                         <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">👥 目標客群</label>
                         <select id="targetFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
                             <option value="all">不限</option>
-                            <option value="student">學生商圈（大学周边）</option>
-                            <option value="office">上班族（商办区）</option>
+                            <option value="student">學生商圈（大學周邊）</option>
+                            <option value="office">上班族（商辦區）</option>
                             <option value="residential">住宅區（家庭客群）</option>
                             <option value="mixed">住商混合</option>
                         </select>
@@ -783,22 +783,22 @@
             `).join('');
         }
 
-        // 大学商圈标记
+        // 大學商圈標記
         const universityZones = {
             '台北市文山區': '政治大学',
             '台北市大安區': '台湾大学',
             '桃園市中壢區': '中原大学',
-            '新竹市東區': '清华/交通大学',
+            '新竹市東區': '清華/交通大學',
             '新竹縣竹北市': '交通大学（博爱）',
-            '台中市北區': '中国医药大学',
+            '台中市北區': '中國醫藥大學',
             '台中市西屯區': '逢甲大学',
-            '嘉義市西區': '嘉义大学',
+            '嘉義市西區': '嘉義大學',
             '台南市東區': '成功大学',
             '高雄市三民區': '高雄大学',
-            '花蓮縣吉安鄉': '东华大学',
-            '宜蘭縣宜蘭市': '宜兰大学',
+            '花蓮縣吉安鄉': '東華大學',
+            '宜蘭縣宜蘭市': '宜蘭大學',
             '新北市淡水區': '淡江大学',
-            '新北市新莊區': '辅仁大学'
+            '新北市新莊區': '輔仁大學'
         };
 
         // 方案 A：計算熱門開店推薦（人口>25萬 + 有大學 + 未額滿）
@@ -862,7 +862,7 @@
 
         // 方案 B：顯示最新開店動態
         function displayRecentStores() {
-            // 最近新增的店家（根据实际情况手动更新）
+            // 最近新增的店家（根據實際情況手動更新）
             const recentStores = [
                 { area: '新北市板橋區', store: 'INFUN板橋2店', date: '今日' },
                 { area: '台北市文山區', store: 'ONE文山店', date: '今日' },
@@ -908,7 +908,7 @@
                 'east': ['宜蘭縣', '花蓮縣', '台東縣']
             };
             
-            // 篩選可开店區域
+            // 篩選可開店區域
             let filtered = areasData.filter(area => {
                 const remaining = area.quota - area.stores;
                 if (remaining <= 0 || area.isSpecial) return false;
