@@ -340,14 +340,14 @@
         <!-- 新增功能模块 -->
         <div class="feature-modules" style="margin: 40px 0;">
             
-            <!-- 方案 D：智能选址助手 -->
+            <!-- 方案 D：智慧選址助手 -->
             <div class="module-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
-                <h2 style="font-size: 1.8em; margin-bottom: 20px;">🎯 智能选址助手</h2>
-                <p style="margin-bottom: 20px; opacity: 0.9;">快速找到最适合您的开店区域</p>
+                <h2 style="font-size: 1.8em; margin-bottom: 20px;">🎯 智慧選址助手</h2>
+                <p style="margin-bottom: 20px; opacity: 0.9;">快速找到最適合您的開店區域</p>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">
                     <div>
-                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">💰 预算范围</label>
+                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">💰 預算範圍</label>
                         <select id="budgetFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
                             <option value="all">不限</option>
                             <option value="low">150-200万（中小型）</option>
@@ -356,7 +356,7 @@
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">📍 偏好区域</label>
+                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">📍 偏好區域</label>
                         <select id="regionFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
                             <option value="all">全台</option>
                             <option value="north">北部（北北基桃竹）</option>
@@ -366,38 +366,38 @@
                         </select>
                     </div>
                     <div>
-                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">👥 目标客群</label>
+                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">👥 目標客群</label>
                         <select id="targetFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
                             <option value="all">不限</option>
-                            <option value="student">学生商圈（大学周边）</option>
+                            <option value="student">學生商圈（大学周边）</option>
                             <option value="office">上班族（商办区）</option>
-                            <option value="residential">住宅区（家庭客群）</option>
+                            <option value="residential">住宅區（家庭客群）</option>
                             <option value="mixed">住商混合</option>
                         </select>
                     </div>
                 </div>
                 
                 <button onclick="smartMatch()" style="background: white; color: #667eea; padding: 15px 40px; border: none; border-radius: 25px; font-size: 1.1em; font-weight: bold; cursor: pointer; width: 100%; transition: all 0.3s;">
-                    🔍 立即配对推荐地点
+                    🔍 立即配對推薦地點
                 </button>
                 
                 <div id="matchResults" style="margin-top: 25px; display: none;">
-                    <h3 style="font-size: 1.3em; margin-bottom: 15px; border-top: 2px solid rgba(255,255,255,0.3); padding-top: 20px;">为您推荐以下地点：</h3>
+                    <h3 style="font-size: 1.3em; margin-bottom: 15px; border-top: 2px solid rgba(255,255,255,0.3); padding-top: 20px;">為您推薦以下地點：</h3>
                     <div id="matchResultsList"></div>
                 </div>
             </div>
             
-            <!-- 方案 A：热门开店推荐 -->
+            <!-- 方案 A：熱門開店推薦 -->
             <div class="module-card" style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px;">
-                <h2 style="color: #ff6b35; font-size: 1.8em; margin-bottom: 10px;">🔥 热门开店推荐 TOP 10</h2>
-                <p style="color: #666; margin-bottom: 20px;">综合人口、剩余名额、商圈类型评估</p>
+                <h2 style="color: #ff6b35; font-size: 1.8em; margin-bottom: 10px;">🔥 熱門開店推薦</h2>
+                <p style="color: #666; margin-bottom: 20px;">條件：人口 > 25萬 + 大學商圈 + 未額滿 | 依剩餘名額排序</p>
                 <div id="hotZonesList"></div>
             </div>
             
-            <!-- 方案 B：最新开店动态 -->
+            <!-- 方案 B：最新開店動態 -->
             <div class="module-card" style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px;">
-                <h2 style="color: #ff6b35; font-size: 1.8em; margin-bottom: 10px;">📢 最新开店动态</h2>
-                <p style="color: #666; margin-bottom: 20px;">这些区域正在快速发展，把握机会！</p>
+                <h2 style="color: #ff6b35; font-size: 1.8em; margin-bottom: 10px;">📢 最新開店動態</h2>
+                <p style="color: #666; margin-bottom: 20px;">這些區域正在快速發展，把握機會！</p>
                 <div id="recentStoresList"></div>
             </div>
             
@@ -801,49 +801,41 @@
             '新北市新莊區': '辅仁大学'
         };
 
-        // 方案 A：计算热门开店推荐
+        // 方案 A：計算熱門開店推薦（人口>25萬 + 有大學 + 未額滿）
         function calculateHotZones() {
             const availableAreas = areasData.filter(area => {
-                const remaining = area.quota - area.stores;
-                return remaining >= 2 && !area.isSpecial; // 至少剩2家，非特殊区域
-            });
-
-            // 计算潜力分数
-            const scoredAreas = availableAreas.map(area => {
-                const remaining = area.quota - area.stores;
-                let score = 0;
-                
-                // 人口分数（权重 40%）
-                score += (area.population / 100000) * 40;
-                
-                // 剩余名额分数（权重 30%）
-                score += remaining * 10;
-                
-                // 大学商圈加分（权重 20%）
                 const key = `${area.county}${area.district}`;
-                if (universityZones[key]) {
-                    score += 20;
-                }
+                const remaining = area.quota - area.stores;
                 
-                // 高人口密度加分（权重 10%）
-                if (area.population > 200000) {
-                    score += 10;
-                }
-                
-                return { ...area, score, key };
+                // 篩選條件：人口 > 25萬 + 有大學 + 未額滿 + 非特殊區域
+                return area.population > 250000 && 
+                       universityZones[key] && 
+                       remaining > 0 && 
+                       !area.isSpecial;
             });
 
-            // 排序并取前10
-            return scoredAreas.sort((a, b) => b.score - a.score).slice(0, 10);
+            // 加上 key 和 remaining 資訊
+            const scoredAreas = availableAreas.map(area => {
+                const key = `${area.county}${area.district}`;
+                const remaining = area.quota - area.stores;
+                return { ...area, key, remaining };
+            });
+
+            // 按剩餘名額排序（多的在前面）
+            return scoredAreas.sort((a, b) => b.remaining - a.remaining);
         }
 
-        // 显示热门推荐
+        // 顯示熱門推薦
         function displayHotZones() {
             const hotZones = calculateHotZones();
             const container = document.getElementById('hotZonesList');
             
+            if (hotZones.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 30px; color: #999;">目前無符合條件的區域（人口>25萬 + 大學商圈 + 未額滿）</div>';
+                return;
+            }
+            
             container.innerHTML = hotZones.map((area, index) => {
-                const remaining = area.quota - area.stores;
                 const university = universityZones[area.key];
                 
                 return `
@@ -851,16 +843,16 @@
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div style="flex: 1;">
                                 <div style="font-size: 1.3em; font-weight: bold; color: #333; margin-bottom: 8px;">
-                                    ${index < 3 ? '🏆' : `${index + 1}.`} ${area.county}${area.district}
-                                    ${university ? `<span style="background: #e3f2fd; color: #1976d2; padding: 3px 10px; border-radius: 12px; font-size: 0.7em; margin-left: 8px;">🎓 ${university}</span>` : ''}
+                                    ${index + 1}. ${area.county}${area.district}
+                                    <span style="background: #e3f2fd; color: #1976d2; padding: 3px 10px; border-radius: 12px; font-size: 0.7em; margin-left: 8px;">🎓 ${university}</span>
                                 </div>
                                 <div style="color: #666; font-size: 0.95em;">
-                                    👥 人口 ${(area.population / 10000).toFixed(1)} 万 | 
-                                    📊 限额 ${area.quota} 家 | 
-                                    🏪 已开 ${area.stores} 家 | 
-                                    <span style="color: #4caf50; font-weight: bold;">✅ 剩余 ${remaining} 家</span>
+                                    👥 人口 ${(area.population / 10000).toFixed(1)} 萬 | 
+                                    📊 限額 ${area.quota} 家 | 
+                                    🏪 已開 ${area.stores} 家 | 
+                                    <span style="color: #4caf50; font-weight: bold; font-size: 1.1em;">✅ 剩餘 ${area.remaining} 家</span>
                                 </div>
-                                ${index < 3 ? `<div style="color: #ff6b35; margin-top: 8px; font-size: 0.9em;">💡 推荐指数：${area.score.toFixed(1)} 分（${index === 0 ? '强力推荐' : index === 1 ? '热门地段' : '优质商圈'}）</div>` : ''}
+                                ${index < 3 && area.remaining >= 3 ? `<div style="color: #ff6b35; margin-top: 8px; font-size: 0.9em;">💡 空檔充足，適合快速進入</div>` : ''}
                             </div>
                         </div>
                     </div>
@@ -868,7 +860,7 @@
             }).join('');
         }
 
-        // 方案 B：显示最新开店动态
+        // 方案 B：顯示最新開店動態
         function displayRecentStores() {
             // 最近新增的店家（根据实际情况手动更新）
             const recentStores = [
@@ -897,18 +889,18 @@
             
             container.innerHTML += `
                 <div style="text-align: center; padding: 20px; color: #999; font-size: 0.95em; border-top: 2px dashed #ddd; margin-top: 20px;">
-                    💡 提示：这些区域正在快速发展中，竞争对手已进入，建议尽快评估！
+                    💡 提示：这些區域正在快速發展中，競爭對手已進入，建議儘快評估！
                 </div>
             `;
         }
 
-        // 方案 D：智能配对功能
+        // 方案 D：智慧配對功能
         function smartMatch() {
             const budget = document.getElementById('budgetFilter').value;
             const region = document.getElementById('regionFilter').value;
             const target = document.getElementById('targetFilter').value;
             
-            // 区域筛选映射
+            // 區域篩選映射
             const regionMap = {
                 'north': ['台北市', '新北市', '基隆市', '桃園市', '新竹市', '新竹縣'],
                 'central': ['台中市', '彰化縣', '南投縣', '雲林縣', '嘉義市', '嘉義縣'],
@@ -916,17 +908,17 @@
                 'east': ['宜蘭縣', '花蓮縣', '台東縣']
             };
             
-            // 筛选可开店区域
+            // 篩選可开店區域
             let filtered = areasData.filter(area => {
                 const remaining = area.quota - area.stores;
                 if (remaining <= 0 || area.isSpecial) return false;
                 
-                // 区域筛选
+                // 區域篩選
                 if (region !== 'all') {
                     if (!regionMap[region].includes(area.county)) return false;
                 }
                 
-                // 目标客群筛选
+                // 目標客群篩選
                 if (target === 'student') {
                     const key = `${area.county}${area.district}`;
                     if (!universityZones[key]) return false;
@@ -944,12 +936,12 @@
                 return { ...area, score, key };
             }).sort((a, b) => b.score - a.score).slice(0, 5);
             
-            // 显示结果
+            // 顯示结果
             const resultsDiv = document.getElementById('matchResults');
             const listDiv = document.getElementById('matchResultsList');
             
             if (filtered.length === 0) {
-                listDiv.innerHTML = '<div style="text-align: center; padding: 30px; color: white; opacity: 0.8;">😢 找不到符合条件的区域，请调整筛选条件</div>';
+                listDiv.innerHTML = '<div style="text-align: center; padding: 30px; color: white; opacity: 0.8;">😢 找不到符合條件的區域，請調整篩選條件</div>';
             } else {
                 listDiv.innerHTML = filtered.map((area, i) => {
                     const remaining = area.quota - area.stores;
@@ -962,12 +954,12 @@
                                 ${university ? `<span style="background: #e3f2fd; color: #1976d2; padding: 3px 10px; border-radius: 12px; font-size: 0.7em; margin-left: 8px;">🎓 ${university}</span>` : ''}
                             </div>
                             <div style="color: #666; line-height: 1.8;">
-                                👥 人口：${(area.population / 10000).toFixed(1)} 万人<br>
-                                📊 开店限额：${area.quota} 家<br>
-                                🏪 已开业：${area.stores} 家<br>
-                                <span style="color: #4caf50; font-weight: bold;">✅ 剩余名额：${remaining} 家</span>
+                                👥 人口：${(area.population / 10000).toFixed(1)} 萬人<br>
+                                📊 開店限額：${area.quota} 家<br>
+                                🏪 已開業：${area.stores} 家<br>
+                                <span style="color: #4caf50; font-weight: bold;">✅ 剩餘名額：${remaining} 家</span>
                             </div>
-                            ${i === 0 ? '<div style="margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; color: #ff6b35; font-size: 0.9em;">🏆 最推荐：综合评估排名第一</div>' : ''}
+                            ${i === 0 ? '<div style="margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; color: #ff6b35; font-size: 0.9em;">🏆 最推薦：綜合評估排名第一</div>' : ''}
                         </div>
                     `;
                 }).join('');
@@ -976,7 +968,7 @@
             resultsDiv.style.display = 'block';
         }
 
-        // 頁面載入時更新統計並加载新功能
+        // 頁面載入時更新統計並載入新功能
         window.onload = () => {
             updateStats();
             displayHotZones();
