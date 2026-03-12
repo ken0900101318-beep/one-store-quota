@@ -89,6 +89,18 @@
             padding: 20px;
             border-radius: 15px;
             text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stat-card.clickable {
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe6d5 100%);
+            border: 2px solid #ff6b35;
         }
 
         .stat-number {
@@ -157,7 +169,7 @@
 
         .result-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmin(150px, 1fr));
             gap: 15px;
             margin-bottom: 15px;
         }
@@ -209,6 +221,71 @@
             font-size: 1.2em;
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            max-width: 900px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #ff6b35;
+        }
+
+        .modal-title {
+            font-size: 2em;
+            color: #ff6b35;
+            margin-bottom: 20px;
+        }
+
+        .modal-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .modal-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .modal-item-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .modal-item-details {
+            color: #666;
+            font-size: 0.9em;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -226,6 +303,11 @@
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 10px;
+            }
+
+            .modal-content {
+                margin: 20px;
+                padding: 20px;
             }
         }
     </style>
@@ -245,21 +327,35 @@
                 <div class="stat-number" id="totalAreas">0</div>
                 <div class="stat-label">開店區域</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card clickable" onclick="showAllStores()">
                 <div class="stat-number" id="totalStores">0</div>
-                <div class="stat-label">已開業店家</div>
+                <div class="stat-label">已開業店家 👆 點擊查看</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card clickable" onclick="showFullAreas()">
                 <div class="stat-number" id="fullAreas">0</div>
-                <div class="stat-label">額滿區域</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-number" id="availableSlots">0</div>
-                <div class="stat-label">剩餘名額</div>
+                <div class="stat-label">額滿區域 👆 點擊查看</div>
             </div>
         </div>
 
         <div class="results" id="results"></div>
+    </div>
+
+    <!-- 額滿區域 Modal -->
+    <div class="modal" id="fullAreasModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('fullAreasModal')">&times;</span>
+            <h2 class="modal-title">🔴 額滿區域列表</h2>
+            <div class="modal-list" id="fullAreasList"></div>
+        </div>
+    </div>
+
+    <!-- 所有店家 Modal -->
+    <div class="modal" id="allStoresModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('allStoresModal')">&times;</span>
+            <h2 class="modal-title">🏪 所有已開業店家</h2>
+            <div class="modal-list" id="allStoresList"></div>
+        </div>
     </div>
 
     <script>
@@ -272,7 +368,7 @@
             }
         };
 
-        // 區域數據（從 Google Sheets 提取 + 2026年最新人口數據）
+        // 區域數據
         const areasData = [
             // 宜蘭縣
             { county: '宜蘭縣', district: '羅東鎮', population: 68850, stores: 2, storeNames: ['羅東店', '羅東飯店'], isSpecial: false },
@@ -311,7 +407,7 @@
             
             // 新竹市
             { county: '新竹市', district: '北區', population: 154124, stores: 2, storeNames: ['星期八', 'infun新竹'], isSpecial: false },
-            { county: '新竹市', district: '東區', population: 222153, stores: 4, storeNames: ['清大店', 'ONE心園', 'Give me貳樓桌遊館', '(待補)'], isSpecial: false },
+            { county: '新竹市', district: '東區', population: 222153, stores: 4, storeNames: ['清大店', 'ONE心園', 'Give me貳樓桌遊館', '新竹東區第4家(待補)'], isSpecial: false },
             
             // 新竹縣
             { county: '新竹縣', district: '湖口鄉', population: 85086, stores: 2, storeNames: ['湖口中山', '鬥陣ONE'], isSpecial: false },
@@ -339,7 +435,7 @@
             
             // 雲林縣
             { county: '雲林縣', district: '虎尾鎮', population: 71255, stores: 1, storeNames: ['虎尾店'], isSpecial: false },
-            { county: '雲林縣', district: '斗六市', population: 108937, stores: 2, storeNames: ['麻友雞斗六店', '(待補)'], isSpecial: true, specialNote: '舊約額滿' },
+            { county: '雲林縣', district: '斗六市', population: 108937, stores: 2, storeNames: ['麻友雞斗六店', '斗六第2家(待補)'], isSpecial: true, specialNote: '舊約額滿' },
             
             // 嘉義市
             { county: '嘉義市', district: '西區', population: 145047, stores: 2, storeNames: ['光彩店', '林森西路'], isSpecial: false },
@@ -381,8 +477,75 @@
             document.getElementById('totalAreas').textContent = areasData.length;
             document.getElementById('totalStores').textContent = areasData.reduce((sum, a) => sum + a.stores, 0);
             document.getElementById('fullAreas').textContent = areasData.filter(a => a.isFull).length;
-            document.getElementById('availableSlots').textContent = areasData.reduce((sum, a) => sum + Math.max(0, a.remaining), 0);
         }
+
+        // 顯示額滿區域
+        function showFullAreas() {
+            const fullAreas = areasData.filter(a => a.isFull);
+            const listDiv = document.getElementById('fullAreasList');
+            
+            if (fullAreas.length === 0) {
+                listDiv.innerHTML = '<div class="no-results">目前沒有額滿區域</div>';
+            } else {
+                listDiv.innerHTML = fullAreas.map(area => `
+                    <div class="modal-item">
+                        <div class="modal-item-title">${area.county} ${area.district}</div>
+                        <div class="modal-item-details">
+                            人口：${area.population.toLocaleString()} | 
+                            限額：${area.quota}家 | 
+                            已開業：${area.stores}家
+                            ${area.isSpecial ? ' | ⚠️ ' + area.specialNote : ''}
+                        </div>
+                        ${area.storeNames.length > 0 ? `
+                            <div style="margin-top: 10px;">
+                                ${area.storeNames.map(s => `<span class="store-tag">${s}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('fullAreasModal').style.display = 'block';
+        }
+
+        // 顯示所有店家
+        function showAllStores() {
+            const areasWithStores = areasData.filter(a => a.stores > 0).sort((a, b) => b.stores - a.stores);
+            const listDiv = document.getElementById('allStoresList');
+            
+            if (areasWithStores.length === 0) {
+                listDiv.innerHTML = '<div class="no-results">目前沒有已開業店家</div>';
+            } else {
+                listDiv.innerHTML = areasWithStores.map(area => `
+                    <div class="modal-item">
+                        <div class="modal-item-title">${area.county} ${area.district} (${area.stores}家)</div>
+                        <div class="modal-item-details">
+                            人口：${area.population.toLocaleString()} | 
+                            限額：${area.quota}家 | 
+                            剩餘：${Math.max(0, area.remaining)}家
+                            ${area.isFull ? ' | 🔴 額滿' : ' | 🟢 可開店'}
+                        </div>
+                        <div style="margin-top: 10px;">
+                            ${area.storeNames.map(s => `<span class="store-tag">${s}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('allStoresModal').style.display = 'block';
+        }
+
+        // 關閉 Modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 點擊 Modal 外部關閉
+        window.onclick = (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        };
 
         // 搜尋功能
         function searchArea() {
