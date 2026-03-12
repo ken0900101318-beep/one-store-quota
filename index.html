@@ -345,24 +345,15 @@
                 <h2 style="font-size: 1.8em; margin-bottom: 20px;">🎯 智慧選址助手</h2>
                 <p style="margin-bottom: 20px; opacity: 0.9;">快速找到最適合您的開店區域</p>
                 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                    <div>
-                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">💰 預算範圍</label>
-                        <select id="budgetFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
-                            <option value="all">不限</option>
-                            <option value="low">150-200萬（中小型）</option>
-                            <option value="mid">200-250萬（標準型）</option>
-                            <option value="high">250-300萬+（旗艦型）</option>
-                        </select>
-                    </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                     <div>
                         <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">📍 偏好區域</label>
                         <select id="regionFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
                             <option value="all">全台</option>
                             <option value="north">北部（北北基桃竹）</option>
-                            <option value="central">中部（中彰投云嘉）</option>
+                            <option value="central">中部（中彰投雲嘉）</option>
                             <option value="south">南部（南高屏）</option>
-                            <option value="east">东部（宜花东）</option>
+                            <option value="east">東部（宜花东）</option>
                         </select>
                     </div>
                     <div>
@@ -896,7 +887,6 @@
 
         // 方案 D：智慧配對功能
         function smartMatch() {
-            const budget = document.getElementById('budgetFilter').value;
             const region = document.getElementById('regionFilter').value;
             const target = document.getElementById('targetFilter').value;
             
