@@ -477,12 +477,21 @@
         function updateStats() {
             document.getElementById('totalAreas').textContent = areasData.length;
             document.getElementById('totalStores').textContent = areasData.reduce((sum, a) => sum + a.stores, 0);
-            document.getElementById('fullAreas').textContent = areasData.filter(a => a.isFull).length;
+            // 包含實際額滿 + 不開放/保留的區域
+            const fullCount = areasData.filter(a => 
+                a.isFull || 
+                (a.isSpecial && a.specialNote && (a.specialNote.includes('不開放') || a.specialNote.includes('保留')))
+            ).length;
+            document.getElementById('fullAreas').textContent = fullCount;
         }
 
         // 顯示額滿區域
         function showFullAreas() {
-            const fullAreas = areasData.filter(a => a.isFull);
+            // 包含：1) 實際額滿的區域 2) 標記為不開放/保留的區域
+            const fullAreas = areasData.filter(a => 
+                a.isFull || 
+                (a.isSpecial && a.specialNote && (a.specialNote.includes('不開放') || a.specialNote.includes('保留')))
+            );
             const listDiv = document.getElementById('fullAreasList');
             
             if (fullAreas.length === 0) {
