@@ -341,7 +341,7 @@
                 <h2 style="font-size: 1.8em; margin-bottom: 20px;">🎯 智慧選址助手</h2>
                 <p style="margin-bottom: 20px; opacity: 0.9;">快速找到最適合您的開店區域</p>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
                     <div>
                         <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">📍 偏好縣市</label>
                         <select id="regionFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
@@ -387,6 +387,15 @@
                             <option value="office">上班族（商辦區）</option>
                             <option value="residential">住宅區（家庭客群）</option>
                             <option value="mixed">住商混合</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">📊 排序方式</label>
+                        <select id="sortFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
+                            <option value="ai">AI 評分綜合排序</option>
+                            <option value="population">人口優先</option>
+                            <option value="university">大學優先</option>
+                            <option value="mature">成熟商圈優先</option>
                         </select>
                     </div>
                 </div>
@@ -1022,6 +1031,7 @@
         function smartMatch() {
             const county = document.getElementById('regionFilter').value;
             const target = document.getElementById('targetFilter').value;
+            const sortMethod = document.getElementById('sortFilter').value;
             
             // 篩選可開店區域
             let filtered = areasData.filter(area => {
@@ -1042,14 +1052,55 @@
                 return true;
             });
             
-            // 按推荐度排序
+            // 加上 key 和 remaining 資訊
             filtered = filtered.map(area => {
                 const key = `${area.county}${area.district}`;
                 const remaining = area.quota - area.stores;
-                let score = area.population / 10000 + remaining * 10;
-                if (universityZones[key]) score += 20;
-                return { ...area, score, key };
-            }).sort((a, b) => b.score - a.score).slice(0, 5);
+                const hasUniversity = universityZones[key] ? 1 : 0;
+                
+                // AI 綜合評分
+                let aiScore = area.population / 10000 + remaining * 10;
+                if (hasUniversity) aiScore += 20;
+                
+                return { ...area, key, remaining, hasUniversity, aiScore };
+            });
+            
+            // 根據排序方式進行排序
+            switch(sortMethod) {
+                case 'population':
+                    // 人口優先：按人口數降序
+                    filtered.sort((a, b) => b.population - a.population);
+                    break;
+                    
+                case 'university':
+                    // 大學優先：有大學的排前面，然後按人口排序
+                    filtered.sort((a, b) => {
+                        if (a.hasUniversity !== b.hasUniversity) {
+                            return b.hasUniversity - a.hasUniversity;
+                        }
+                        return b.population - a.population;
+                    });
+                    break;
+                    
+                case 'mature':
+                    // 成熟商圈優先：已開店數多的排前面（但還有名額）
+                    filtered.sort((a, b) => {
+                        if (a.stores !== b.stores) {
+                            return b.stores - a.stores;
+                        }
+                        return b.population - a.population;
+                    });
+                    break;
+                    
+                case 'ai':
+                default:
+                    // AI 評分綜合排序：綜合考量人口、剩餘名額、大學商圈
+                    filtered.sort((a, b) => b.aiScore - a.aiScore);
+                    break;
+            }
+            
+            // 取前5名
+            filtered = filtered.slice(0, 5);
             
             // 顯示结果
             const resultsDiv = document.getElementById('matchResults');
@@ -1058,6 +1109,14 @@
             if (filtered.length === 0) {
                 listDiv.innerHTML = '<div style="text-align: center; padding: 30px; color: white; opacity: 0.8;">😢 找不到符合條件的區域，請調整篩選條件</div>';
             } else {
+                // 根據排序方式決定第一名的提示文字
+                const topRankText = {
+                    'ai': '🏆 最推薦：AI 綜合評分排名第一',
+                    'population': '🏆 最推薦：人口數最多的區域',
+                    'university': '🏆 最推薦：大學商圈最佳選擇',
+                    'mature': '🏆 最推薦：最成熟的商圈'
+                };
+                
                 listDiv.innerHTML = filtered.map((area, i) => {
                     const remaining = area.quota - area.stores;
                     const university = universityZones[area.key];
@@ -1074,7 +1133,7 @@
                                 🏪 已開業：${area.stores} 家<br>
                                 <span style="color: #4caf50; font-weight: bold;">✅ 剩餘名額：${remaining} 家</span>
                             </div>
-                            ${i === 0 ? '<div style="margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; color: #ff6b35; font-size: 0.9em;">🏆 最推薦：綜合評估排名第一</div>' : ''}
+                            ${i === 0 ? `<div style="margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; color: #ff6b35; font-size: 0.9em;">${topRankText[sortMethod]}</div>` : ''}
                         </div>
                     `;
                 }).join('');
