@@ -323,10 +323,6 @@
         </div>
 
         <div class="stats">
-            <div class="stat-card">
-                <div class="stat-number" id="totalAreas">0</div>
-                <div class="stat-label">開店區域</div>
-            </div>
             <div class="stat-card clickable" onclick="showAllStores()">
                 <div class="stat-number" id="totalStores">0</div>
                 <div class="stat-label">已開業店家 👆 點擊查看</div>
@@ -380,8 +376,8 @@
             
             <!-- 方案 A：熱門開店推薦 -->
             <div class="module-card" style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px;">
-                <h2 style="color: #ff6b35; font-size: 1.8em; margin-bottom: 10px;">🔥 熱門開店推薦</h2>
-                <p style="color: #666; margin-bottom: 20px;">條件：人口 > 25萬 + 大學商圈 + 未額滿 | 依剩餘名額排序</p>
+                <h2 style="color: #ff6b35; font-size: 1.8em; margin-bottom: 10px;">🔥 北中南熱門開店推薦</h2>
+                <p style="color: #666; margin-bottom: 20px;">條件：人口 > 20萬 + 未額滿 | 依剩餘名額排序 | 分區顯示</p>
                 <div id="hotZonesList"></div>
             </div>
             
@@ -788,67 +784,103 @@
             '高雄市三民區': '高雄大学',
             '花蓮縣吉安鄉': '東華大學',
             '宜蘭縣宜蘭市': '宜蘭大學',
-            '新北市淡水區': '淡江大学',
+            '新北市淡水區': '淡江大學',
             '新北市新莊區': '輔仁大學'
         };
 
-        // 方案 A：計算熱門開店推薦（人口>25萬 + 有大學 + 未額滿）
+        // 方案 A：計算熱門開店推薦（人口>20萬 + 未額滿，分北中南）
         function calculateHotZones() {
-            const availableAreas = areasData.filter(area => {
-                const key = `${area.county}${area.district}`;
-                const remaining = area.quota - area.stores;
+            // 區域分類
+            const regionMap = {
+                '北部': ['台北市', '新北市', '基隆市', '桃園市', '新竹市', '新竹縣', '宜蘭縣'],
+                '中部': ['台中市', '彰化縣', '南投縣', '苗栗縣', '雲林縣'],
+                '南部': ['嘉義市', '嘉義縣', '台南市', '高雄市', '屏東縣', '花蓮縣', '台東縣', '澎湖縣', '金門縣']
+            };
+            
+            const result = {};
+            
+            ['北部', '中部', '南部'].forEach(region => {
+                const areas = areasData.filter(area => {
+                    const remaining = area.quota - area.stores;
+                    
+                    // 篩選條件：屬於該區域 + 人口 > 20萬 + 未額滿 + 非特殊區域
+                    return regionMap[region].includes(area.county) &&
+                           area.population > 200000 && 
+                           remaining > 0 && 
+                           !area.isSpecial;
+                }).map(area => {
+                    const key = `${area.county}${area.district}`;
+                    const remaining = area.quota - area.stores;
+                    return { ...area, key, remaining };
+                }).sort((a, b) => b.remaining - a.remaining); // 按剩餘名額排序
                 
-                // 篩選條件：人口 > 25萬 + 有大學 + 未額滿 + 非特殊區域
-                return area.population > 250000 && 
-                       universityZones[key] && 
-                       remaining > 0 && 
-                       !area.isSpecial;
+                result[region] = areas;
             });
-
-            // 加上 key 和 remaining 資訊
-            const scoredAreas = availableAreas.map(area => {
-                const key = `${area.county}${area.district}`;
-                const remaining = area.quota - area.stores;
-                return { ...area, key, remaining };
-            });
-
-            // 按剩餘名額排序（多的在前面）
-            return scoredAreas.sort((a, b) => b.remaining - a.remaining);
+            
+            return result;
         }
 
-        // 顯示熱門推薦
+        // 顯示熱門推薦（分北中南）
         function displayHotZones() {
-            const hotZones = calculateHotZones();
+            const hotZonesByRegion = calculateHotZones();
             const container = document.getElementById('hotZonesList');
             
-            if (hotZones.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 30px; color: #999;">目前無符合條件的區域（人口>25萬 + 大學商圈 + 未額滿）</div>';
-                return;
-            }
+            const regionColors = {
+                '北部': '#2196f3',
+                '中部': '#ff9800',
+                '南部': '#4caf50'
+            };
             
-            container.innerHTML = hotZones.map((area, index) => {
-                const university = universityZones[area.key];
+            const regionIcons = {
+                '北部': '🏙️',
+                '中部': '🏞️',
+                '南部': '🌴'
+            };
+            
+            let html = '';
+            
+            ['北部', '中部', '南部'].forEach(region => {
+                const areas = hotZonesByRegion[region];
                 
-                return `
-                    <div style="background: ${index < 3 ? '#fff9e6' : '#f9f9f9'}; padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid ${index < 3 ? '#ff6b35' : '#ccc'};">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div style="flex: 1;">
-                                <div style="font-size: 1.3em; font-weight: bold; color: #333; margin-bottom: 8px;">
-                                    ${index + 1}. ${area.county}${area.district}
-                                    <span style="background: #e3f2fd; color: #1976d2; padding: 3px 10px; border-radius: 12px; font-size: 0.7em; margin-left: 8px;">🎓 ${university}</span>
-                                </div>
-                                <div style="color: #666; font-size: 0.95em;">
-                                    👥 人口 ${(area.population / 10000).toFixed(1)} 萬 | 
-                                    📊 限額 ${area.quota} 家 | 
-                                    🏪 已開 ${area.stores} 家 | 
-                                    <span style="color: #4caf50; font-weight: bold; font-size: 1.1em;">✅ 剩餘 ${area.remaining} 家</span>
-                                </div>
-                                ${index < 3 && area.remaining >= 3 ? `<div style="color: #ff6b35; margin-top: 8px; font-size: 0.9em;">💡 空檔充足，適合快速進入</div>` : ''}
-                            </div>
-                        </div>
-                    </div>
+                if (areas.length === 0) {
+                    return; // 跳過無資料的區域
+                }
+                
+                html += `
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: ${regionColors[region]}; font-size: 1.3em; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid ${regionColors[region]};">
+                            ${regionIcons[region]} ${region}地區推薦
+                        </h3>
                 `;
-            }).join('');
+                
+                html += areas.slice(0, 5).map((area, index) => {
+                    const university = universityZones[area.key];
+                    
+                    return `
+                        <div style="background: ${index === 0 ? '#fff9e6' : '#f9f9f9'}; padding: 18px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid ${index === 0 ? regionColors[region] : '#ddd'};">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #333; margin-bottom: 8px;">
+                                ${index + 1}. ${area.county}${area.district}
+                                ${university ? `<span style="background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 10px; font-size: 0.65em; margin-left: 6px;">🎓 ${university}</span>` : ''}
+                            </div>
+                            <div style="color: #666; font-size: 0.9em;">
+                                👥 人口 ${(area.population / 10000).toFixed(1)} 萬 | 
+                                📊 限額 ${area.quota} 家 | 
+                                🏪 已開 ${area.stores} 家 | 
+                                <span style="color: ${regionColors[region]}; font-weight: bold; font-size: 1.05em;">✅ 剩餘 ${area.remaining} 家</span>
+                            </div>
+                            ${index === 0 && area.remaining >= 3 ? `<div style="color: #ff6b35; margin-top: 6px; font-size: 0.85em;">💡 ${region}首選，空檔充足</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+                
+                html += '</div>';
+            });
+            
+            if (html === '') {
+                container.innerHTML = '<div style="text-align: center; padding: 30px; color: #999;">目前無符合條件的區域（人口>20萬 + 未額滿）</div>';
+            } else {
+                container.innerHTML = html;
+            }
         }
 
         // 方案 B：顯示最新開店動態
