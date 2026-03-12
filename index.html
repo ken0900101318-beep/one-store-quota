@@ -580,7 +580,6 @@
 
         // 更新統計數據
         function updateStats() {
-            document.getElementById('totalAreas').textContent = areasData.length;
             document.getElementById('totalStores').textContent = areasData.reduce((sum, a) => sum + a.stores, 0);
             // 包含：實際額滿 + 舊約額滿 + 不開放/保留的區域
             const fullCount = areasData.filter(a => 
