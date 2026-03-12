@@ -853,6 +853,7 @@
             '台中市北屯區': '中臺科技大學',
             '台中市西區': '台中教育大學',
             '台中市龍井區': '東海大學',
+            '台中市沙鹿區': '東海大學/靜宜大學',
             '台中市大里區': '修平科技大學',
             '台中市太平區': '亞洲大學',
             
@@ -1061,6 +1062,8 @@
                 // AI 綜合評分
                 let aiScore = area.population / 10000 + remaining * 10;
                 if (hasUniversity) aiScore += 20;
+                // 已開店數扣分（競爭風險）
+                aiScore -= area.stores * 10;
                 
                 return { ...area, key, remaining, hasUniversity, aiScore };
             });
