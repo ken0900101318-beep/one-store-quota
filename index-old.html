@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ONE桌遊 開店區域查詢系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #ff6b35;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .search-box {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #ff6b35;
+        }
+
+        .search-box button {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .search-box button:hover {
+            transform: scale(1.05);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .stat-card.clickable {
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe6d5 100%);
+            border: 2px solid #ff6b35;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: 900;
+            color: #ff6b35;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1em;
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .result-item {
+            background: #f9f9f9;
+            border-left: 5px solid #ff6b35;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .result-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .badge-full {
+            background: #ff4444;
+            color: white;
+        }
+
+        .badge-available {
+            background: #4caf50;
+            color: white;
+        }
+
+        .badge-special {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmin(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            color: #999;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stores-list {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .stores-title {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .store-tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 12px;
+            border-radius: 15px;
+            margin: 5px 5px 5px 0;
+            font-size: 0.9em;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            max-width: 900px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2em;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .modal-close:hover {
+            color: #ff6b35;
+        }
+
+        .modal-title {
+            font-size: 2em;
+            color: #ff6b35;
+            margin-bottom: 20px;
+        }
+
+        .modal-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .modal-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #ff6b35;
+        }
+
+        .modal-item-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .modal-item-details {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .result-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .modal-content {
+                margin: 20px;
+                padding: 20px;
+            }
+        }
+    </style>
+    <script src="utils.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1><img src="one-logo.jpg" alt="ONE桌遊" style="width: 50px; height: 50px; vertical-align: middle; margin-right: 10px; border-radius: 50%;"> ONE桌遊 開店區域查詢系統</h1>
+        <p class="subtitle">查詢各區域開店名額 | 數據更新：2026年3月</p>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="輸入縣市、鄉鎮市區名稱搜尋..." />
+            <button onclick="searchArea()">🔍 查詢</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card clickable" onclick="showAllStores()">
+                <div class="stat-number" id="totalStores">0</div>
+                <div class="stat-label">已開業店家 👆 點擊查看</div>
+            </div>
+            <div class="stat-card clickable" onclick="showFullAreas()">
+                <div class="stat-number" id="fullAreas">0</div>
+                <div class="stat-label">額滿區域 👆 點擊查看</div>
+            </div>
+        </div>
+
+        <!-- 新增功能模块 -->
+        <div class="feature-modules" style="margin: 40px 0;">
+            
+            <!-- 方案 D：智慧選址助手 -->
+            <div class="module-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px;">
+                <h2 style="font-size: 1.8em; margin-bottom: 20px;">🎯 智慧選址助手</h2>
+                <p style="margin-bottom: 20px; opacity: 0.9;">快速找到最適合您的開店區域</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">📍 偏好縣市</label>
+                        <select id="regionFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
+                            <option value="all">全台灣</option>
+                            <optgroup label="北部">
+                                <option value="台北市">台北市</option>
+                                <option value="新北市">新北市</option>
+                                <option value="基隆市">基隆市</option>
+                                <option value="桃園市">桃園市</option>
+                                <option value="新竹市">新竹市</option>
+                                <option value="新竹縣">新竹縣</option>
+                            </optgroup>
+                            <optgroup label="中部">
+                                <option value="苗栗縣">苗栗縣</option>
+                                <option value="台中市">台中市</option>
+                                <option value="彰化縣">彰化縣</option>
+                                <option value="南投縣">南投縣</option>
+                                <option value="雲林縣">雲林縣</option>
+                            </optgroup>
+                            <optgroup label="南部">
+                                <option value="嘉義市">嘉義市</option>
+                                <option value="嘉義縣">嘉義縣</option>
+                                <option value="台南市">台南市</option>
+                                <option value="高雄市">高雄市</option>
+                                <option value="屏東縣">屏東縣</option>
+                            </optgroup>
+                            <optgroup label="東部">
+                                <option value="宜蘭縣">宜蘭縣</option>
+                                <option value="花蓮縣">花蓮縣</option>
+                                <option value="台東縣">台東縣</option>
+                            </optgroup>
+                            <optgroup label="離島">
+                                <option value="澎湖縣">澎湖縣</option>
+                                <option value="金門縣">金門縣</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">👥 目標客群</label>
+                        <select id="targetFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
+                            <option value="all">不限</option>
+                            <option value="student">學生商圈（大學周邊）</option>
+                            <option value="office">上班族（商辦區）</option>
+                            <option value="residential">住宅區（家庭客群）</option>
+                            <option value="mixed">住商混合</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-size: 0.95em;">📊 排序方式</label>
+                        <select id="sortFilter" style="width: 100%; padding: 12px; border-radius: 8px; border: none; font-size: 1em;">
+                            <option value="ai">AI 評分綜合排序</option>
+                            <option value="population">人口優先</option>
+                            <option value="university">大學優先</option>
+                            <option value="mature">成熟商圈優先</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button onclick="smartMatch()" style="background: white; color: #667eea; padding: 15px 40px; border: none; border-radius: 25px; font-size: 1.1em; font-weight: bold; cursor: pointer; width: 100%; transition: all 0.3s;">
+                    🔍 立即配對推薦地點
+                </button>
+                
+                <div id="matchResults" style="margin-top: 25px; display: none;">
+                    <h3 style="font-size: 1.3em; margin-bottom: 15px; border-top: 2px solid rgba(255,255,255,0.3); padding-top: 20px;">為您推薦以下地點：</h3>
+                    <div id="matchResultsList"></div>
+                </div>
+            </div>
+            
+            <!-- 方案 A：熱門開店推薦 -->
+            <div class="module-card" style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h2 style="color: #ff6b35; font-size: 1.8em; margin-bottom: 10px;">🔥 北中南熱門開店推薦</h2>
+                <p style="color: #666; margin-bottom: 20px;">條件：人口 > 20萬 + 未額滿 | 依剩餘名額排序 | 分區顯示</p>
+                <div id="hotZonesList"></div>
+            </div>
+            
+            <!-- 方案 B：最新開店動態 -->
+            <div class="module-card" style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px;">
+                <h2 style="color: #ff6b35; font-size: 1.8em; margin-bottom: 10px;">📢 最新開店動態</h2>
+                <p style="color: #666; margin-bottom: 20px;">這些區域正在快速發展，把握機會！</p>
+                <div id="recentStoresList"></div>
+            </div>
+            
+        </div>
+
+        <div class="results" id="results"></div>
+    </div>
+
+    <!-- 額滿區域 Modal -->
+    <div class="modal" id="fullAreasModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('fullAreasModal')">&times;</span>
+            <h2 class="modal-title">🔴 額滿區域列表</h2>
+            <div class="modal-list" id="fullAreasList"></div>
+        </div>
+    </div>
+
+    <!-- 所有店家 Modal -->
+    <div class="modal" id="allStoresModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('allStoresModal')">&times;</span>
+            <h2 class="modal-title">🏪 所有已開業店家</h2>
+            <div class="modal-list" id="allStoresList"></div>
+        </div>
+    </div>
+
+    <script>
+        // XSS 防護輔助函數
+        function safe(str) {
+            if (str === null || str === undefined) return '';
+            const div = document.createElement('div');
+            div.textContent = String(str);
+            return div.innerHTML;
+        }
+
+        // 開店規則
+        const QUOTA_RULES = {
+            calculate: (population) => {
+                if (population < 100000) return 2;
+                if (population < 200000) return 3;
+                return 4;
+            }
+        };
+
+        // 區域數據
+        const areasData = [
+            // 宜蘭縣
+            { county: '宜蘭縣', district: '宜蘭市', population: 94396, stores: 1, storeNames: ['宜蘭店'], isSpecial: false },
+            { county: '宜蘭縣', district: '羅東鎮', population: 68850, stores: 2, storeNames: ['羅東店', '羅東飯店'], isSpecial: false },
+            { county: '宜蘭縣', district: '冬山鄉', population: 52904, stores: 0, storeNames: [], isSpecial: false },
+            { county: '宜蘭縣', district: '五結鄉', population: 41757, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 基隆市
+            { county: '基隆市', district: '中正區', population: 51434, stores: 2, storeNames: ['One桌遊基隆海大店', '弈錦玩桌遊基隆店'], isSpecial: false },
+            
+            // 新北市
+            { county: '新北市', district: '永和區', population: 211205, stores: 1, storeNames: ['咖麻起永和店'], isSpecial: false },
+            { county: '新北市', district: '新店區', population: 306636, stores: 1, storeNames: ['腦力方新店北新店'], isSpecial: false },
+            { county: '新北市', district: '土城區', population: 242735, stores: 1, storeNames: ['土城亞東店'], isSpecial: false },
+            { county: '新北市', district: '中和區', population: 403396, stores: 3, storeNames: ['中和店', 'IN FUN中和店', 'ONE桌遊中和圓通店'], isSpecial: false },
+            { county: '新北市', district: '新莊區', population: 420922, stores: 2, storeNames: ['新莊丹鳳店', '新莊輔大店'], isSpecial: false },
+            { county: '新北市', district: '樹林區', population: 177130, stores: 3, storeNames: ['麻利好室樹林店', '麻利好室保安店', '腦力方樹林大安'], isSpecial: false },
+            { county: '新北市', district: '蘆洲區', population: 196186, stores: 3, storeNames: ['汪桌遊和平概念店', '汪桌遊長安店', '腦力方蘆洲中興'], isSpecial: false },
+            { county: '新北市', district: '板橋區', population: 549515, stores: 4, storeNames: ['麻賽客館前店', 'IN FUN站前店', 'ONE板橋忠孝店', 'INFUN板橋2店'], isSpecial: false },
+            { county: '新北市', district: '淡水區', population: 208573, stores: 1, storeNames: ['麻利好室淡大店'], isSpecial: false },
+            { county: '新北市', district: '三峽區', population: 115421, stores: 1, storeNames: ['Give me 三峽'], isSpecial: false },
+            { county: '新北市', district: '三重區', population: 382749, stores: 1, storeNames: ['三元四喜三重店'], isSpecial: true, specialNote: '不開放（已授權同一業者）' },
+            { county: '新北市', district: '汐止區', population: 212807, stores: 0, storeNames: [], isSpecial: false },
+            { county: '新北市', district: '林口區', population: 138630, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 台北市
+            { county: '台北市', district: '大安區', population: 281679, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台北市', district: '內湖區', population: 267345, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台北市', district: '士林區', population: 257504, stores: 1, storeNames: ['ONE桌遊士林劍潭店'], isSpecial: false },
+            { county: '台北市', district: '文山區', population: 253272, stores: 1, storeNames: ['ONE文山店'], isSpecial: false },
+            { county: '台北市', district: '北投區', population: 235258, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台北市', district: '中山區', population: 211649, stores: 1, storeNames: ['ONE桌遊台北復興北路店'], isSpecial: false },
+            { county: '台北市', district: '信義區', population: 201012, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台北市', district: '松山區', population: 187065, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台北市', district: '萬華區', population: 168261, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台北市', district: '中正區', population: 143821, stores: 1, storeNames: ['ONE桌遊台北汀州店'], isSpecial: false },
+            { county: '台北市', district: '南港區', population: 120000, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台北市', district: '大同區', population: 115000, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 桃園市
+            { county: '桃園市', district: '桃園區', population: 478629, stores: 4, storeNames: ['infun桃園', 'ONE 大林', 'ONE 桃園武陵店', 'ONE桌遊桃園夜市店'], isSpecial: false },
+            { county: '桃園市', district: '中壢區', population: 439290, stores: 4, storeNames: ['內壢文化店', 'ONE 中原店', 'infun中壢中原', '聚樂中壢龍岡店'], isSpecial: false },
+            { county: '桃園市', district: '平鎮區', population: 227870, stores: 1, storeNames: ['桃園平鎮店'], isSpecial: false },
+            { county: '桃園市', district: '八德區', population: 216054, stores: 1, storeNames: ['ONE 八德店'], isSpecial: false },
+            { county: '桃園市', district: '龜山區', population: 188562, stores: 2, storeNames: ['東瀛龜山店', '雀特GPT桌遊館A7'], isSpecial: false },
+            { county: '桃園市', district: '楊梅區', population: 182936, stores: 1, storeNames: ['ONE桌遊楊梅店'], isSpecial: false },
+            { county: '桃園市', district: '蘆竹區', population: 170423, stores: 1, storeNames: ['南崁店'], isSpecial: false },
+            { county: '桃園市', district: '大園區', population: 88432, stores: 1, storeNames: ['ONE 大園店'], isSpecial: false },
+            { county: '桃園市', district: '觀音區', population: 76276, stores: 1, storeNames: ['觀音草漯店'], isSpecial: false },
+            
+            // 新竹市
+            { county: '新竹市', district: '北區', population: 154124, stores: 2, storeNames: ['星期八', 'infun新竹'], isSpecial: false },
+            { county: '新竹市', district: '東區', population: 222153, stores: 4, storeNames: ['清大店', 'ONE心園', 'Give me貳樓桌遊館', '新竹東區第4家(待補)'], isSpecial: false },
+            
+            // 新竹縣
+            { county: '新竹縣', district: '湖口鄉', population: 85086, stores: 2, storeNames: ['湖口中山', '鬥陣ONE'], isSpecial: false },
+            { county: '新竹縣', district: '新豐鄉', population: 59877, stores: 2, storeNames: ['ONE新豐站前店', 'FAN新豐店'], isSpecial: false },
+            { county: '新竹縣', district: '竹北市', population: 221005, stores: 3, storeNames: ['小雀幸', 'ONE高鐵店', 'ONE桌遊竹北店'], isSpecial: true, specialNote: '舊約額滿' },
+            { county: '新竹縣', district: '竹東鎮', population: 97844, stores: 1, storeNames: ['麻上玩竹中店'], isSpecial: false },
+            
+            // 苗栗縣
+            { county: '苗栗縣', district: '頭份市', population: 108294, stores: 2, storeNames: ['麻上玩', '尚順店'], isSpecial: true, specialNote: '舊約額滿' },
+            { county: '苗栗縣', district: '竹南鎮', population: 91494, stores: 0, storeNames: [], isSpecial: true, specialNote: '保留不開放' },
+            { county: '苗栗縣', district: '苗栗市', population: 85671, stores: 0, storeNames: [], isSpecial: false },
+            { county: '苗栗縣', district: '苑里鎮', population: 43139, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 台中市
+            { county: '台中市', district: '北屯區', population: 317532, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台中市', district: '西屯區', population: 237978, stores: 1, storeNames: ['台中漢口店'], isSpecial: false },
+            { county: '台中市', district: '大里區', population: 210922, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台中市', district: '太平區', population: 201696, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台中市', district: '南屯區', population: 186106, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台中市', district: '豐原區', population: 161597, stores: 0, storeNames: [], isSpecial: false },
+            { county: '台中市', district: '北區', population: 143563, stores: 2, storeNames: ['三民店', '台中·玩Bar店'], isSpecial: false },
+            { county: '台中市', district: '西區', population: 115000, stores: 1, storeNames: ['ONE桌遊台中民權店'], isSpecial: false },
+            { county: '台中市', district: '龍井區', population: 79069, stores: 1, storeNames: ['益智生活館東海店'], isSpecial: false },
+            { county: '台中市', district: '中區', population: 17921, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 南投縣
+            { county: '南投縣', district: '南投市', population: 96077, stores: 1, storeNames: ['南投店'], isSpecial: true, specialNote: '舊約額滿' },
+            { county: '南投縣', district: '埔里鎮', population: 75635, stores: 1, storeNames: ['埔里店'], isSpecial: false },
+            { county: '南投縣', district: '草屯鎮', population: 97839, stores: 1, storeNames: ['草屯店'], isSpecial: true, specialNote: '舊約額滿' },
+            
+            // 彰化縣
+            { county: '彰化縣', district: '彰化市', population: 220067, stores: 3, storeNames: ['ONE中山店', 'ONE府前店', '益智生活館彰化店'], isSpecial: false },
+            { county: '彰化縣', district: '員林市', population: 122013, stores: 1, storeNames: ['摸摸自助桌遊'], isSpecial: false },
+            { county: '彰化縣', district: '和美鎮', population: 86499, stores: 0, storeNames: [], isSpecial: false },
+            { county: '彰化縣', district: '鹿港鎮', population: 82120, stores: 0, storeNames: [], isSpecial: false },
+            { county: '彰化縣', district: '溪湖鎮', population: 52695, stores: 0, storeNames: [], isSpecial: false },
+            { county: '彰化縣', district: '二林鎮', population: 46342, stores: 0, storeNames: [], isSpecial: false },
+            { county: '彰化縣', district: '福興鄉', population: 44177, stores: 0, storeNames: [], isSpecial: false },
+            { county: '彰化縣', district: '花壇鄉', population: 42768, stores: 0, storeNames: [], isSpecial: false },
+            { county: '彰化縣', district: '社頭鄉', population: 40205, stores: 0, storeNames: [], isSpecial: false },
+            { county: '彰化縣', district: '大村鄉', population: 38851, stores: 0, storeNames: [], isSpecial: false },
+            { county: '彰化縣', district: '田中鎮', population: 38204, stores: 0, storeNames: [], isSpecial: false },
+            { county: '彰化縣', district: '伸港鄉', population: 38071, stores: 0, storeNames: [], isSpecial: false },
+            { county: '彰化縣', district: '秀水鄉', population: 37270, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 雲林縣
+            { county: '雲林縣', district: '斗六市', population: 108937, stores: 2, storeNames: ['麻友雞斗六店', '斗六第2家(待補)'], isSpecial: true, specialNote: '舊約額滿' },
+            { county: '雲林縣', district: '虎尾鎮', population: 71255, stores: 1, storeNames: ['虎尾店'], isSpecial: false },
+            { county: '雲林縣', district: '西螺鎮', population: 43925, stores: 0, storeNames: [], isSpecial: false },
+            { county: '雲林縣', district: '斗南鎮', population: 43285, stores: 0, storeNames: [], isSpecial: false },
+            { county: '雲林縣', district: '北港鎮', population: 36951, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 嘉義市
+            { county: '嘉義市', district: '西區', population: 145047, stores: 2, storeNames: ['光彩店', '林森西路'], isSpecial: false },
+            { county: '嘉義市', district: '東區', population: 116482, stores: 2, storeNames: ['新生店', '公園店'], isSpecial: true, specialNote: '舊約額滿' },
+            
+            // 嘉義縣
+            { county: '嘉義縣', district: '民雄鄉', population: 69731, stores: 1, storeNames: ['民雄店'], isSpecial: true, specialNote: '舊約額滿' },
+            { county: '嘉義縣', district: '水上鄉', population: 46751, stores: 0, storeNames: [], isSpecial: false },
+            { county: '嘉義縣', district: '中埔鄉', population: 41524, stores: 0, storeNames: [], isSpecial: false },
+            { county: '嘉義縣', district: '朴子市', population: 39957, stores: 0, storeNames: [], isSpecial: false },
+            { county: '嘉義縣', district: '太保市', population: 39875, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 台南市
+            { county: '台南市', district: '東區', population: 180556, stores: 2, storeNames: ['方城台南長榮店', 'AX桌遊台南東區店'], isSpecial: true, specialNote: '舊約額滿' },
+            { county: '台南市', district: '永康區', population: 235963, stores: 3, storeNames: ['永康崑大店', '方城台南中華店', '方城永康中正店'], isSpecial: false },
+            { county: '台南市', district: '中西區', population: 76683, stores: 1, storeNames: ['台南站前中山店'], isSpecial: true, specialNote: '舊約額滿' },
+            
+            // 高雄市
+            { county: '高雄市', district: '仁武區', population: 99541, stores: 1, storeNames: ['仁武店'], isSpecial: false },
+            { county: '高雄市', district: '三民區', population: 328532, stores: 2, storeNames: ['大昌店', '三民店'], isSpecial: false },
+            { county: '高雄市', district: '苓雅區', population: 160900, stores: 1, storeNames: ['苓雅店'], isSpecial: false },
+            { county: '高雄市', district: '前鎮區', population: 176568, stores: 1, storeNames: ['ONE高雄前鎮'], isSpecial: false },
+            { county: '高雄市', district: '左營區', population: 198000, stores: 1, storeNames: ['威勝桌遊館 高雄左營店'], isSpecial: false },
+            
+            // 屏東縣
+            { county: '屏東縣', district: '屏東市', population: 191218, stores: 1, storeNames: ['中正店'], isSpecial: false },
+            { county: '屏東縣', district: '潮州鎮', population: 53689, stores: 0, storeNames: [], isSpecial: false },
+            { county: '屏東縣', district: '內埔鄉', population: 52702, stores: 0, storeNames: [], isSpecial: false },
+            { county: '屏東縣', district: '萬丹鄉', population: 48623, stores: 0, storeNames: [], isSpecial: false },
+            { county: '屏東縣', district: '東港鎮', population: 45809, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 花蓮縣
+            { county: '花蓮縣', district: '吉安鄉', population: 82938, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 台東縣
+            { county: '台東縣', district: '台東市', population: 102558, stores: 0, storeNames: [], isSpecial: false },
+            
+            // 澎湖縣
+            { county: '澎湖縣', district: '馬公市', population: 63090, stores: 1, storeNames: ['澎湖店'], isSpecial: false },
+            
+            // 金門縣
+            { county: '金門縣', district: '金寧鄉', population: 35619, stores: 1, storeNames: ['金門店'], isSpecial: false },
+            { county: '金門縣', district: '金城鎮', population: 40860, stores: 0, storeNames: [], isSpecial: false }
+        ];
+
+        // 計算每個區域的配額和狀態
+        areasData.forEach(area => {
+            area.quota = QUOTA_RULES.calculate(area.population);
+            area.remaining = area.quota - area.stores;
+            area.isFull = area.remaining <= 0;
+        });
+
+        // 更新統計數據
+        function updateStats() {
+            document.getElementById('totalStores').textContent = areasData.reduce((sum, a) => sum + a.stores, 0);
+            // 包含：實際額滿 + 舊約額滿 + 不開放/保留的區域
+            const fullCount = areasData.filter(a => 
+                a.isFull || 
+                (a.isSpecial && a.specialNote && (
+                    a.specialNote.includes('舊約額滿') ||
+                    a.specialNote.includes('不開放') || 
+                    a.specialNote.includes('保留')
+                ))
+            ).length;
+            document.getElementById('fullAreas').textContent = fullCount;
+        }
+
+        // 顯示額滿區域
+        function showFullAreas() {
+            // 包含：1) 實際額滿的區域 2) 舊約額滿 3) 標記為不開放/保留的區域
+            const fullAreas = areasData.filter(a => 
+                a.isFull || 
+                (a.isSpecial && a.specialNote && (
+                    a.specialNote.includes('舊約額滿') ||
+                    a.specialNote.includes('不開放') || 
+                    a.specialNote.includes('保留')
+                ))
+            );
+            const listDiv = document.getElementById('fullAreasList');
+            
+            if (fullAreas.length === 0) {
+                listDiv.innerHTML = '<div class="no-results">目前沒有額滿區域</div>';
+            } else {
+                listDiv.innerHTML = fullAreas.map(area => `
+                    <div class="modal-item">
+                        <div class="modal-item-title">${area.county} ${area.district}</div>
+                        <div class="modal-item-details">
+                            人口：${area.population.toLocaleString()} | 
+                            限額：${area.quota}家 | 
+                            已開業：${area.stores}家
+                            ${area.isSpecial ? ' | ⚠️ ' + area.specialNote : ''}
+                        </div>
+                        ${area.storeNames.length > 0 ? `
+                            <div style="margin-top: 10px;">
+                                ${area.storeNames.map(s => `<span class="store-tag">${s}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('fullAreasModal').style.display = 'block';
+        }
+
+        // 顯示所有店家
+        function showAllStores() {
+            const areasWithStores = areasData.filter(a => a.stores > 0);
+            const listDiv = document.getElementById('allStoresList');
+            
+            if (areasWithStores.length === 0) {
+                listDiv.innerHTML = '<div class="no-results">目前沒有已開業店家</div>';
+            } else {
+                // 按縣市分組
+                const groupedByCounty = {};
+                areasWithStores.forEach(area => {
+                    if (!groupedByCounty[area.county]) {
+                        groupedByCounty[area.county] = [];
+                    }
+                    groupedByCounty[area.county].push(area);
+                });
+                
+                // 對每個縣市內的區域按店家數排序
+                Object.keys(groupedByCounty).forEach(county => {
+                    groupedByCounty[county].sort((a, b) => b.stores - a.stores);
+                });
+                
+                // 從北到南的縣市順序
+                const countyOrder = [
+                    '基隆市', '台北市', '新北市', '宜蘭縣',
+                    '桃園市', '新竹市', '新竹縣', '苗栗縣',
+                    '台中市', '彰化縣', '南投縣', '雲林縣',
+                    '嘉義市', '嘉義縣', '台南市', '高雄市',
+                    '屏東縣', '花蓮縣', '台東縣',
+                    '澎湖縣', '金門縣', '連江縣'
+                ];
+                
+                // 按從北到南排序
+                const sortedCounties = Object.keys(groupedByCounty).sort((a, b) => {
+                    const indexA = countyOrder.indexOf(a);
+                    const indexB = countyOrder.indexOf(b);
+                    return indexA - indexB;
+                });
+                
+                listDiv.innerHTML = sortedCounties.map(county => {
+                    const areas = groupedByCounty[county];
+                    const totalStores = areas.reduce((sum, a) => sum + a.stores, 0);
+                    
+                    return `
+                        <div style="margin-bottom: 30px;">
+                            <h3 style="color: #ff6b35; margin-bottom: 15px; font-size: 1.5em; border-bottom: 2px solid #ff6b35; padding-bottom: 10px;">
+                                📍 ${county} (${totalStores} 家店)
+                            </h3>
+                            ${areas.map(area => `
+                                <div class="modal-item">
+                                    <div class="modal-item-title">${area.district} (${area.stores}家)</div>
+                                    <div class="modal-item-details">
+                                        人口：${area.population.toLocaleString()} | 
+                                        限額：${area.quota}家 | 
+                                        剩餘：${Math.max(0, area.remaining)}家
+                                        ${area.isFull ? ' | 🔴 額滿' : ' | 🟢 可開店'}
+                                    </div>
+                                    <div style="margin-top: 10px;">
+                                        ${area.storeNames.map(s => `<span class="store-tag">${s}</span>`).join('')}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            document.getElementById('allStoresModal').style.display = 'block';
+        }
+
+        // 關閉 Modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // 點擊 Modal 外部關閉
+        window.onclick = (event) => {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        };
+
+        // 搜尋功能
+        function searchArea() {
+            const query = document.getElementById('searchInput').value.trim().toLowerCase();
+            const resultsDiv = document.getElementById('results');
+            
+            if (!query) {
+                resultsDiv.innerHTML = '<div class="no-results">請輸入縣市或鄉鎮市區名稱進行搜尋</div>';
+                return;
+            }
+
+            const results = areasData.filter(area => 
+                area.county.toLowerCase().includes(query) || 
+                area.district.toLowerCase().includes(query)
+            );
+
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">找不到相關區域</div>';
+                return;
+            }
+
+            resultsDiv.innerHTML = results.map(area => `
+                <div class="result-item">
+                    <div class="result-header">
+                        <div class="result-title">${area.county} ${area.district}</div>
+                        <div>
+                            ${area.isFull ? '<span class="badge badge-full">額滿</span>' : '<span class="badge badge-available">可開店</span>'}
+                            ${area.isSpecial ? '<span class="badge badge-special">' + (area.specialNote || '特殊') + '</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="result-details">
+                        <div class="detail-item">
+                            <div class="detail-label">人口數</div>
+                            <div class="detail-value">${area.population.toLocaleString()}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">店家限額</div>
+                            <div class="detail-value">${area.quota} 家</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">已開業</div>
+                            <div class="detail-value">${area.stores} 家</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">剩餘名額</div>
+                            <div class="detail-value" style="color: ${area.remaining > 0 ? '#4caf50' : '#ff4444'}">${Math.max(0, area.remaining)} 家</div>
+                        </div>
+                    </div>
+                    ${area.storeNames.length > 0 ? `
+                        <div class="stores-list">
+                            <div class="stores-title">已開業店家：</div>
+                            ${area.storeNames.map(store => `<span class="store-tag">${store}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        // 大學商圈標記
+        const universityZones = {
+            // 台北市
+            '台北市大安區': '台灣大學',
+            '台北市文山區': '政治大學',
+            '台北市中正區': '台灣大學',
+            '台北市大同區': '台北科技大學',
+            '台北市信義區': '台北醫學大學',
+            '台北市士林區': '東吳大學',
+            '台北市北投區': '文化大學',
+            '台北市內湖區': '德明財經科大',
+            '台北市南港區': '中國科技大學',
+            
+            // 新北市
+            '新北市淡水區': '淡江大學',
+            '新北市新莊區': '輔仁大學',
+            '新北市三峽區': '台北大學',
+            '新北市板橋區': '致理科技大學',
+            '新北市新店區': '景文科技大學',
+            '新北市永和區': '世新大學',
+            '新北市中和區': '華夏科技大學',
+            '新北市土城區': '亞東技術學院',
+            '新北市樹林區': '樹德家商',
+            
+            // 桃園市
+            '桃園市中壢區': '中原大學',
+            '桃園市桃園區': '開南大學',
+            '桃園市龜山區': '長庚大學',
+            '桃園市八德區': '元智大學',
+            '桃園市平鎮區': '健行科技大學',
+            
+            // 新竹
+            '新竹市東區': '清華/陽明交通大學',
+            '新竹縣竹北市': '陽明交通大學（博愛）',
+            '新竹縣竹東鎮': '明新科技大學',
+            
+            // 苗栗
+            '苗栗縣苗栗市': '育達科技大學',
+            '苗栗縣竹南鎮': '亞太創意技術學院',
+            
+            // 台中市
+            '台中市西屯區': '逢甲大學/東海大學',
+            '台中市北區': '中國醫藥大學',
+            '台中市南區': '中興大學',
+            '台中市東區': '台中科技大學',
+            '台中市北屯區': '中臺科技大學',
+            '台中市西區': '台中教育大學',
+            '台中市沙鹿區': '靜宜大學/弘光科技大學',
+            '台中市大里區': '修平科技大學',
+            '台中市太平區': '亞洲大學',
+            
+            // 彰化
+            '彰化縣彰化市': '彰化師範大學',
+            '彰化縣員林市': '大葉大學',
+            
+            // 雲林
+            '雲林縣斗六市': '雲林科技大學',
+            '雲林縣虎尾鎮': '虎尾科技大學',
+            
+            // 嘉義
+            '嘉義市西區': '嘉義大學',
+            '嘉義市東區': '嘉義大學',
+            '嘉義縣民雄鄉': '中正大學',
+            
+            // 台南市
+            '台南市東區': '成功大學',
+            '台南市永康區': '南台科技大學',
+            '台南市中西區': '台南應用科技大學',
+            '台南市安南區': '台南大學',
+            
+            // 高雄市
+            '高雄市三民區': '高雄大學',
+            '高雄市鼓山區': '中山大學',
+            '高雄市苓雅區': '高雄師範大學',
+            '高雄市楠梓區': '高雄科技大學',
+            '高雄市燕巢區': '高雄科技大學（燕巢）',
+            '高雄市左營區': '義守大學',
+            '高雄市前鎮區': '高雄科技大學（建工）',
+            
+            // 屏東
+            '屏東縣屏東市': '屏東大學',
+            '屏東縣內埔鄉': '屏東科技大學',
+            
+            // 宜蘭
+            '宜蘭縣宜蘭市': '宜蘭大學',
+            
+            // 花蓮
+            '花蓮縣吉安鄉': '東華大學',
+            
+            // 台東
+            '台東縣台東市': '台東大學'
+        };
+
+        // 方案 A：計算熱門開店推薦（人口>20萬 + 未額滿，分北中南）
+        function calculateHotZones() {
+            // 區域分類
+            const regionMap = {
+                '北部': ['台北市', '新北市', '基隆市', '桃園市', '新竹市', '新竹縣', '宜蘭縣'],
+                '中部': ['台中市', '彰化縣', '南投縣', '苗栗縣', '雲林縣'],
+                '南部': ['嘉義市', '嘉義縣', '台南市', '高雄市', '屏東縣', '花蓮縣', '台東縣', '澎湖縣', '金門縣']
+            };
+            
+            const result = {};
+            
+            ['北部', '中部', '南部'].forEach(region => {
+                const areas = areasData.filter(area => {
+                    const remaining = area.quota - area.stores;
+                    
+                    // 篩選條件：屬於該區域 + 人口 > 20萬 + 未額滿 + 非特殊區域
+                    return regionMap[region].includes(area.county) &&
+                           area.population > 200000 && 
+                           remaining > 0 && 
+                           !area.isSpecial;
+                }).map(area => {
+                    const key = `${area.county}${area.district}`;
+                    const remaining = area.quota - area.stores;
+                    return { ...area, key, remaining };
+                }).sort((a, b) => b.remaining - a.remaining); // 按剩餘名額排序
+                
+                result[region] = areas;
+            });
+            
+            return result;
+        }
+
+        // 顯示熱門推薦（分北中南）
+        function displayHotZones() {
+            const hotZonesByRegion = calculateHotZones();
+            const container = document.getElementById('hotZonesList');
+            
+            const regionColors = {
+                '北部': '#2196f3',
+                '中部': '#ff9800',
+                '南部': '#4caf50'
+            };
+            
+            const regionIcons = {
+                '北部': '🏙️',
+                '中部': '🏞️',
+                '南部': '🌴'
+            };
+            
+            let html = '';
+            
+            ['北部', '中部', '南部'].forEach(region => {
+                const areas = hotZonesByRegion[region];
+                
+                if (areas.length === 0) {
+                    return; // 跳過無資料的區域
+                }
+                
+                html += `
+                    <div style="margin-bottom: 30px;">
+                        <h3 style="color: ${regionColors[region]}; font-size: 1.3em; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 3px solid ${regionColors[region]};">
+                            ${regionIcons[region]} ${region}地區推薦
+                        </h3>
+                `;
+                
+                html += areas.slice(0, 5).map((area, index) => {
+                    const university = universityZones[area.key];
+                    
+                    return `
+                        <div style="background: ${index === 0 ? '#fff9e6' : '#f9f9f9'}; padding: 18px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid ${index === 0 ? regionColors[region] : '#ddd'};">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #333; margin-bottom: 8px;">
+                                ${index + 1}. ${area.county}${area.district}
+                                ${university ? `<span style="background: #e3f2fd; color: #1976d2; padding: 2px 8px; border-radius: 10px; font-size: 0.65em; margin-left: 6px;">🎓 ${university}</span>` : ''}
+                            </div>
+                            <div style="color: #666; font-size: 0.9em;">
+                                👥 人口 ${(area.population / 10000).toFixed(1)} 萬 | 
+                                📊 限額 ${area.quota} 家 | 
+                                🏪 已開 ${area.stores} 家 | 
+                                <span style="color: ${regionColors[region]}; font-weight: bold; font-size: 1.05em;">✅ 剩餘 ${area.remaining} 家</span>
+                            </div>
+                            ${index === 0 && area.remaining >= 3 ? `<div style="color: #ff6b35; margin-top: 6px; font-size: 0.85em;">💡 ${region}首選，空檔充足</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+                
+                html += '</div>';
+            });
+            
+            if (html === '') {
+                container.innerHTML = '<div style="text-align: center; padding: 30px; color: #999;">目前無符合條件的區域（人口>20萬 + 未額滿）</div>';
+            } else {
+                container.innerHTML = html;
+            }
+        }
+
+        // 方案 B：顯示最新開店動態
+        function displayRecentStores() {
+            // 最近新增的店家（根據實際情況手動更新）
+            const recentStores = [
+                { area: '新北市板橋區', store: 'INFUN板橋2店', date: '今日' },
+                { area: '台北市文山區', store: 'ONE文山店', date: '今日' },
+                { area: '桃園市平鎮區', store: '桃園平鎮店', date: '今日' },
+                { area: '台中市西區', store: 'ONE桌遊台中民權店', date: '今日' },
+                { area: '台中市北區', store: '台中·玩Bar店', date: '今日' },
+                { area: '台中市西屯區', store: '台中漢口店', date: '今日' },
+                { area: '高雄市左營區', store: '威勝桌遊館 高雄左營店', date: '本週' }
+            ];
+            
+            const container = document.getElementById('recentStoresList');
+            
+            container.innerHTML = recentStores.map(item => `
+                <div style="background: #f0f7ff; padding: 15px 20px; border-radius: 10px; margin-bottom: 12px; border-left: 4px solid #2196f3;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="flex: 1;">
+                            <span style="background: #2196f3; color: white; padding: 3px 12px; border-radius: 12px; font-size: 0.85em; margin-right: 12px;">⏰ ${item.date}</span>
+                            <span style="font-weight: bold; color: #333; font-size: 1.1em;">${item.area}</span>
+                            <span style="color: #666; margin-left: 8px;">- ${item.store}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML += `
+                <div style="text-align: center; padding: 20px; color: #999; font-size: 0.95em; border-top: 2px dashed #ddd; margin-top: 20px;">
+                    💡 提示：这些區域正在快速發展中，競爭對手已進入，建議儘快評估！
+                </div>
+            `;
+        }
+
+        // 方案 D：智慧配對功能
+        function smartMatch() {
+            const county = document.getElementById('regionFilter').value;
+            const target = document.getElementById('targetFilter').value;
+            const sortMethod = document.getElementById('sortFilter').value;
+            
+            // 篩選可開店區域
+            let filtered = areasData.filter(area => {
+                const remaining = area.quota - area.stores;
+                if (remaining <= 0 || area.isSpecial) return false;
+                
+                // 縣市篩選
+                if (county !== 'all') {
+                    if (area.county !== county) return false;
+                }
+                
+                // 目標客群篩選
+                if (target === 'student') {
+                    const key = `${area.county}${area.district}`;
+                    if (!universityZones[key]) return false;
+                }
+                
+                return true;
+            });
+            
+            // 加上 key 和 remaining 資訊
+            filtered = filtered.map(area => {
+                const key = `${area.county}${area.district}`;
+                const remaining = area.quota - area.stores;
+                const hasUniversity = universityZones[key] ? 1 : 0;
+                
+                // AI 綜合評分
+                let aiScore = area.population / 10000 + remaining * 10;
+                if (hasUniversity) aiScore += 20;
+                // 已開店數扣分（競爭風險）
+                aiScore -= area.stores * 10;
+                
+                return { ...area, key, remaining, hasUniversity, aiScore };
+            });
+            
+            // 根據排序方式進行排序
+            switch(sortMethod) {
+                case 'population':
+                    // 人口優先：按人口數降序
+                    filtered.sort((a, b) => b.population - a.population);
+                    break;
+                    
+                case 'university':
+                    // 大學優先：有大學的排前面，然後按人口排序
+                    filtered.sort((a, b) => {
+                        if (a.hasUniversity !== b.hasUniversity) {
+                            return b.hasUniversity - a.hasUniversity;
+                        }
+                        return b.population - a.population;
+                    });
+                    break;
+                    
+                case 'mature':
+                    // 成熟商圈優先：已開店數多的排前面（但還有名額）
+                    filtered.sort((a, b) => {
+                        if (a.stores !== b.stores) {
+                            return b.stores - a.stores;
+                        }
+                        return b.population - a.population;
+                    });
+                    break;
+                    
+                case 'ai':
+                default:
+                    // AI 評分綜合排序：綜合考量人口、剩餘名額、大學商圈
+                    filtered.sort((a, b) => b.aiScore - a.aiScore);
+                    break;
+            }
+            
+            // 取前5名
+            filtered = filtered.slice(0, 5);
+            
+            // 顯示结果
+            const resultsDiv = document.getElementById('matchResults');
+            const listDiv = document.getElementById('matchResultsList');
+            
+            if (filtered.length === 0) {
+                listDiv.innerHTML = '<div style="text-align: center; padding: 30px; color: white; opacity: 0.8;">😢 找不到符合條件的區域，請調整篩選條件</div>';
+            } else {
+                // 根據排序方式決定第一名的提示文字
+                const topRankText = {
+                    'ai': '🏆 最推薦：AI 綜合評分排名第一',
+                    'population': '🏆 最推薦：人口數最多的區域',
+                    'university': '🏆 最推薦：大學商圈最佳選擇',
+                    'mature': '🏆 最推薦：最成熟的商圈'
+                };
+                
+                listDiv.innerHTML = filtered.map((area, i) => {
+                    const remaining = area.quota - area.stores;
+                    const university = universityZones[area.key];
+                    
+                    return `
+                        <div style="background: white; color: #333; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 10px; color: #667eea;">
+                                ${i + 1}. ${area.county}${area.district}
+                                ${university ? `<span style="background: #e3f2fd; color: #1976d2; padding: 3px 10px; border-radius: 12px; font-size: 0.7em; margin-left: 8px;">🎓 ${university}</span>` : ''}
+                            </div>
+                            <div style="color: #666; line-height: 1.8;">
+                                👥 人口：${(area.population / 10000).toFixed(1)} 萬人<br>
+                                📊 開店限額：${area.quota} 家<br>
+                                🏪 已開業：${area.stores} 家<br>
+                                <span style="color: #4caf50; font-weight: bold;">✅ 剩餘名額：${remaining} 家</span>
+                            </div>
+                            ${i === 0 ? `<div style="margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 8px; color: #ff6b35; font-size: 0.9em;">${topRankText[sortMethod]}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            resultsDiv.style.display = 'block';
+        }
+
+        // 頁面載入時更新統計並載入新功能
+        window.onload = () => {
+            updateStats();
+            displayHotZones();
+            displayRecentStores();
+        };
+
+        // Enter 鍵搜尋
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchArea();
+        });
+    </script>
+</body>
+</html>
